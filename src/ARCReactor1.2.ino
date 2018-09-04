@@ -59,9 +59,9 @@ void loop() {
 int loopcnt = 0;
 int curlight = 0;
 float SpeedLimit = .6;
-bool autoRunning = false;
+bool autoRightRunning = false;
 bool autoSkillsRunning = false;
-
+bool autoLeftRunning = false;
 void Breathe() {
 
   // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
@@ -118,15 +118,15 @@ void RunRobot() {
       x_axis = map(Xbox.getAnalogHat(LeftHatX), -7500, -32767, 0, 255);
     }
 
-    if (Xbox.getButtonClick(Y))
+    if (Xbox.getButtonClick(Y)) // switch to autoSkillsRunning if needed
     {
-      autoRunning = true;
+      autoRightRunning = true;
       StartTime = millis();
     }
 
     if (Xbox.getButtonClick(X))
     {
-      autoSkillsRunning = true;
+      autoLeftRunning = true;
       StartTime = millis();
     }
 
@@ -153,23 +153,105 @@ void RunRobot() {
 
     if (Xbox.getButtonPress(R1))
     {
-      Clawspeed =   100;
+      Clawspeed =  100;
     }
 
     if (Xbox.getButtonPress(L1))
     {
       Clawspeed = -100;
     }
-
+    if (Xbox.getButtonClick(DOWN))
+    {
+      autoLeftRunning = true;
+      StartTime = millis();
+    }
     DriveLeftSpeed = y_axis - x_axis;
     DriveRightSpeed = y_axis + x_axis;
 
-    if (autoRunning)
+    if (autoRightRunning)
     {
       int32_t time = millis() - StartTime;
       if (time < 1000) //forward
       {
-        DriveLeftSpeed = -225;
+        DriveLeftSpeed = -255;
+        DriveRightSpeed = -255;
+      }
+      else if (time < 2000) //drop lift by going backwards
+      {
+        DriveLeftSpeed = 150;
+        DriveRightSpeed = 150;
+      }
+      else if (time < 2700) // lower lift
+      {
+        Liftspeed = -123;
+      }
+      else if (time < 4300) // drive forward to unload preload
+      {
+        DriveLeftSpeed = -200;
+        DriveRightSpeed = -200;
+      }
+      else if (time < 5200) // lower "cone lift"
+      {
+        Clawspeed = 100;
+      }
+/*      else if (time < 5800) // drive forward to pick up mobile goal
+      {
+        DriveLeftSpeed = -255;
+        DriveRightSpeed = -255;
+      }  */
+      else if (time < 5600) // raise lift
+      {
+        Liftspeed = 123;
+      }
+
+      else {
+        autoRightRunning = false;
+      }
+    }
+    if (autoLeftRunning)
+    {
+      int32_t time = millis() - StartTime;
+      if (time < 1000) //forward
+      {
+        DriveLeftSpeed = -255;
+        DriveRightSpeed = -255;
+      }
+      else if (time < 2000) //drop lift by going backwards
+      {
+        DriveLeftSpeed = 150;
+        DriveRightSpeed = 150;
+      }
+      else if (time < 2700) // lower lift
+      {
+        Liftspeed = -123;
+      }
+      else if (time < 4300) // drive forward to unload preload
+      {
+        DriveLeftSpeed = -200;
+        DriveRightSpeed = -200;
+      }
+      else if (time < 5200) // lower "cone lift"
+      {
+        Clawspeed = 100;
+      }
+/*      else if (time < 5800) // drive forward to pick up mobile goal
+      {
+        DriveLeftSpeed = -255;
+        DriveRightSpeed = -255;
+      }  */
+      else if (time < 5500) // raise lift
+      {
+        Liftspeed = 123;
+      }
+      else if (time < 5800) // raise lift
+      {
+        Liftspeed = 123;
+        DriveLeftSpeed = -255;
+        DriveRightSpeed = -255;
+      }
+/*      if (time < 1000) //forward
+      {
+        DriveLeftSpeed = -255;
         DriveRightSpeed = -255;
       }
       else if (time < 1500) //drop lift by going backwards
@@ -177,25 +259,65 @@ void RunRobot() {
         DriveLeftSpeed = 255;
         DriveRightSpeed = 255;
       }
-      else if (time < 2100) //lower lift
+      else if (time < 2400) // lower lift
       {
         Liftspeed = -123;
-      }
-      else if (time < 4600) // drive forward to pick up mobile goal
-      {
-        DriveLeftSpeed = -225;
+        DriveLeftSpeed = -255;
         DriveRightSpeed = -255;
-      } else {
-        autoRunning = false;
       }
-    }
+      else if (time < 3900) // drive forward to unload preload
+      {
+        DriveLeftSpeed = -125;//was 110
+        DriveRightSpeed = -125;//was 110
+      }
+      else if (time < 4800) // lower "cone lift"
+      {
+        Clawspeed = 100;
+      }
+
+      else if (time < 6400) // raise lift
+      {
+        Liftspeed = 123;
+      } */
+
+      else if (time < 7000) // drive backwards
+        {
+          DriveLeftSpeed = 195;
+          DriveRightSpeed = 255;
+        }
+        else if (time < 7940) // spin left, 900
+        {
+          DriveLeftSpeed = -255;
+          DriveRightSpeed = 255;
+        }
+        else if (time < 89040) // go forwards
+        {
+          DriveLeftSpeed = -255;
+          DriveRightSpeed = -255;
+        }
+        else if (time < 10540)
+        {
+          Liftspeed = -123;
+        }
+        else if (time < 10040)//back up and park
+        {
+          DriveLeftSpeed = 255;
+          DriveRightSpeed = 255;
+        }
+
+        else{
+          autoLeftRunning = false;
+
+        }
+      }
+
 
     if (autoSkillsRunning)
     {
       int32_t time = millis() - StartTime;
       if (time < 1000)
       {
-        DriveLeftSpeed = -225;
+        DriveLeftSpeed = -255;
         DriveRightSpeed = -255;
       }
       else if (time < 1500)
@@ -203,46 +325,40 @@ void RunRobot() {
         DriveLeftSpeed = 255;
         DriveRightSpeed = 255;
       }
-      else if (time < 2100)
+      else if (time < 2300)
       {
         Liftspeed = -123;
       }
-      else if (time < 7500)
+      else if (time < 7700)
       {
-        DriveLeftSpeed = -225;
+        DriveLeftSpeed = -255;
         DriveRightSpeed = -255;
       }
-      else if (time < 8000)
+      else if (time < 8600)
+      {
+        Clawspeed = 100;
+      }
+      else if (time < 9500)
       {
         Liftspeed = 123;
       }
-      else if (time < 12000)
+      else if (time < 13100)
       {
-        DriveLeftSpeed = -225;
+        DriveLeftSpeed = -255;
         DriveRightSpeed = -255;
       }
-      else if (time < 12500)
+      else if (time < 11400)
       {
         Liftspeed = -123;
       }
-      else if (time < 13500)
-      {
-        DriveLeftSpeed = 255;
-        DriveRightSpeed = 255;
-      }
-      else if (time < 14500)
-      {
-        DriveLeftSpeed = -225;
-        DriveRightSpeed = -255;
-      }
-      else if (time < 15500)
+      else if (time < 14900)
       {
         DriveLeftSpeed = 255;
         DriveRightSpeed = 255;
       }
 
       else {
-        autoRunning = false;
+        autoSkillsRunning = false;
       }
     }
 
